@@ -6,6 +6,7 @@ import com.sendi.spongeurl.service.URLService;
 import com.sendi.spongeurl.exception.InvalidURLException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.NoSuchElementException;
 
 @RestController
+@RequestMapping("/api/v1/url")
 public class URLController {
 
     private final URLService urlService;
@@ -26,7 +28,7 @@ public class URLController {
 
     @PostMapping("/shorten")
     public ResponseEntity<Object> shortenURL(@RequestBody FullURL fullURL, HttpServletRequest request) {
-        ShortURL shortURL = urlService.shortenURL(request, fullURL);
+
         UrlValidator urlValidator = new UrlValidator(new String[]{"ftp", "https", "http"});
 
         if (!urlValidator.isValid(fullURL.getValue())) {
@@ -35,6 +37,9 @@ public class URLController {
             // returns a custom body with error message and bad request status code
             return ResponseEntity.badRequest().body(error);
         }
+        System.out.println(fullURL.getValue());
+        ShortURL shortURL = urlService.shortenURL(request, fullURL);
+
         return ResponseEntity.ok(shortURL);
     }
 

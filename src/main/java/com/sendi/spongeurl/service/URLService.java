@@ -20,7 +20,7 @@ public class URLService {
     }
 
     private UrlEntity get(Long id) {
-        UrlEntity urlEntity = urlRepository.findById(id);
+        UrlEntity urlEntity = urlRepository.findById(id).get();
         return urlEntity;
     }
 
@@ -40,18 +40,18 @@ public class URLService {
 
         UrlEntity savedUrl = null;
 
-        if (savedUrls.isEmpty()) {
+        if (savedUrls == null || savedUrls.isEmpty()) {
             savedUrl = save(fullURL);
         } else {
             savedUrl = savedUrls.get(0);
         }
 
         String shortUrlText = ShorteningUtil.idToStr(savedUrl.getId());
-
+        System.out.println(shortUrlText);
         return new ShortURL(baseURL + shortUrlText);
     }
 
     private List<UrlEntity> checkFullURLExists(FullURL fullUrl) {
-        return urlRepository.findByFullUrl(fullUrl.getValue());
+        return urlRepository.findAllByFullURL(fullUrl.getValue());
     }
 }
