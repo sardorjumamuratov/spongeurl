@@ -40,6 +40,8 @@ public class URLService {
 
         UrlEntity savedUrl = null;
 
+        System.out.println("savedUrls => " + savedUrls);
+
         if (savedUrls == null || savedUrls.isEmpty()) {
             savedUrl = save(fullURL);
         } else {
