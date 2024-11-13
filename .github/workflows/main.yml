@@ -28,7 +28,7 @@ jobs:
           mvn -B package --file pom.xml
 
       - name: build docker image
-        uses: actions/build-push-action@v6
+        uses:  docker/build-push-action@v6
         with:
           context: .
           dockerfile: Dockerfile
@@ -42,7 +42,7 @@ jobs:
           password: ${{secrets.DOCKER_HUB_ACCESS_TOKEN}}
 
       - name: push to docker hub
-        uses: actions/build-push-action@v6
+        uses:  docker/build-push-action@v6
         with:
           context: .
           dockerfile: Dockerfile
