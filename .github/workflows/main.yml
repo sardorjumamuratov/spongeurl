@@ -31,7 +31,7 @@ jobs:
         uses:  docker/build-push-action@v2
         with:
           context: .
-          file: {context}/Dockerfile
+#          file: {context}/Dockerfile
           push: false
           tags: ${{secrets.DOCKER_HUB_USERNAME }} /sponge-url:latest
 
@@ -45,6 +45,6 @@ jobs:
         uses:  docker/build-push-action@v2
         with:
           context: .
-          file: {context}/Dockerfile
+#          file: {context}/Dockerfile
           push: true
           tags: ${{secrets.DOCKER_HUB_USERNAME }} /sponge-url:latest
