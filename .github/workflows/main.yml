@@ -26,11 +26,25 @@ jobs:
         run: |
           mvn clean 
           mvn -B package --file pom.xml
-          
-#      - name: build docker image
-#        uses: actions/build-push-action@v2
-#        with:
-#          context: .
-#          dockerfile: Dockerfile
-#          push: false
-#          tags:
+
+      - name: build docker image
+        uses: actions/build-push-action@v6
+        with:
+          context: .
+          dockerfile: Dockerfile
+          push: false
+          tags: ${{secrets.DOCKER_HUB_USERNAME }} /spongeurl:latest
+
+      - name: log into docker hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{secrets.DOCKER_HUB_USERNAME}}
+          password: ${{secrets.DOCKER_HUB_ACCESS_TOKEN}}
+
+      - name: push to docker hub
+        uses: actions/build-push-action@v6
+        with:
+          context: .
+          dockerfile: Dockerfile
+          push: true
+          tags: ${{secrets.DOCKER_HUB_USERNAME }} /spongeurl:latest
