@@ -1,37 +1,15 @@
 package com.sendi.spongeurl.exception;
 
-public class InvalidURLException {
-    private String field;
-    private String value;
-    private String message;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-    public InvalidURLException(String field, String value, String message) {
-        this.field = field;
-        this.value = value;
-        this.message = message;
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+public class InvalidURLException extends RuntimeException{
+
+    public InvalidURLException() {
     }
 
-    public String getField() {
-        return field;
-    }
-
-    public void setField(String field) {
-        this.field = field;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
+    public InvalidURLException(String message) {
+        super(message);
     }
 }

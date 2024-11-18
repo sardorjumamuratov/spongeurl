@@ -32,10 +32,7 @@ public class URLController {
         UrlValidator urlValidator = new UrlValidator(new String[]{"ftp", "https", "http"});
 
         if (!urlValidator.isValid(fullURL.getValue())) {
-            InvalidURLException error = new InvalidURLException("url", fullURL.getValue(), "Invalid URL");
-
-            // returns a custom body with error message and bad request status code
-            return ResponseEntity.badRequest().body(error);
+            throw new InvalidURLException("Invalid URL entered");
         }
         System.out.println(fullURL.getValue());
         ShortURL shortURL = urlService.shortenURL(request, fullURL);
