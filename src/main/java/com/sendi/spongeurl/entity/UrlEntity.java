@@ -16,9 +16,6 @@ public class UrlEntity {
     private Long id;
     private String shortURL;
     private String fullURL;
-
-    public UrlEntity(String fullURL) {
-        this.fullURL = fullURL;
-    }
+    private Long clicks;
 }
 

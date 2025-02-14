@@ -1,5 +1,6 @@
 package com.sendi.spongeurl.exception;
 
+import com.sendi.spongeurl.exception.custom.InvalidURLException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
