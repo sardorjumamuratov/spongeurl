@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,8 +16,13 @@ import org.springframework.data.redis.core.RedisHash;
 public class UrlEntity {
     @Id
     private Long id;
+
     private String shortURL;
+
     private String fullURL;
+
     private Long clicks;
+
+    private LocalDate expiryDate;
 }
 

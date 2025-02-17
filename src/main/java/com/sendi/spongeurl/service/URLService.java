@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ua_parser.Client;
 import ua_parser.Parser;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -55,11 +56,16 @@ public class URLService {
         return url.getFullURL();
     }
 
-    private void save(Long id, String fullUrl, String shortUrl) {
+    private void save(Long id, String fullUrl, String shortUrl, LocalDate expiryDate) {
         UrlEntity entity = new UrlEntity();
         entity.setId(id);
         entity.setShortURL(shortUrl);
         entity.setFullURL(fullUrl);
+
+        if (Objects.isNull(expiryDate))
+            expiryDate = LocalDate.now().plusDays(3);
+
+        entity.setExpiryDate(expiryDate);
 
         repository.save(entity);
     }
@@ -97,7 +103,7 @@ public class URLService {
             else
                 shortUrlText = urlCreateRequest.getCustomShortUrl();
 
-            save(nextId, urlCreateRequest.getFullUrlValue(), shortUrlText);
+            save(nextId, urlCreateRequest.getFullUrlValue(), shortUrlText, urlCreateRequest.getExpiryDate());
         }
 
         return new ShortURL(baseURL + shortUrlText);
@@ -153,5 +159,13 @@ public class URLService {
 
         List<String> existingDeviceDetails = userInfoEntity.getDeviceDetails();
         existingDeviceDetails.add(deviceDetails);
+    }
+
+    public List<UrlEntity> findAllExpiredUrls(LocalDate today) {
+        return repository.findByExpiryDateBefore(today);
+    }
+
+    public void clearAllExpiredUrls(List<UrlEntity> urls) {
+        repository.deleteAll(urls);
     }
 }
