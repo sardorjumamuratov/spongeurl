@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ua_parser.Client;
+import ua_parser.Parser;
 
 import java.util.List;
 import java.util.Objects;
@@ -31,15 +33,18 @@ public class URLService {
                 .orElseThrow(() -> new RuntimeException("Url not found with id " + id));
     }
 
+    @Transactional
     public String getFullUrl(String shortUrl, HttpServletRequest request) {
         String ipAddress = request.getHeader("X-Forwarded-For");
         if (Objects.isNull(ipAddress) || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
             ipAddress = request.getRemoteAddr();
-
-            UserInfoEntity userInfoEntity = new UserInfoEntity();
-            userInfoEntity.setAddress(ipAddress);
-            userInfoRepository.save(userInfoEntity);
         }
+
+        UserInfoEntity userInfoEntity = new UserInfoEntity();
+        userInfoEntity.setAddress(ipAddress);
+        userInfoRepository.save(userInfoEntity);
+
+        saveDeviceDetails(userInfoEntity.getAddress(), request.getHeader("user-agent"));
 
         UrlEntity url = repository.findByShortURL(shortUrl)
                 .orElseThrow(() -> new RuntimeException("URL doesn't exist for this short url!"));
@@ -59,16 +64,18 @@ public class URLService {
         repository.save(entity);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public ShortURL shortenURL(HttpServletRequest servletRequest, UrlCreateRequest urlCreateRequest) {
         String ipAddress = servletRequest.getHeader("X-Forwarded-For");
         if (Objects.isNull(ipAddress) || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
             ipAddress = servletRequest.getRemoteAddr();
-
-            UserInfoEntity userInfoEntity = new UserInfoEntity();
-            userInfoEntity.setAddress(ipAddress);
-            userInfoRepository.save(userInfoEntity);
         }
+
+        UserInfoEntity userInfoEntity = new UserInfoEntity();
+        userInfoEntity.setAddress(ipAddress);
+        userInfoRepository.save(userInfoEntity);
+
+        saveDeviceDetails(userInfoEntity.getAddress(), servletRequest.getHeader("user-agent"));
 
         if (repository.existsByShortURL(urlCreateRequest.getCustomShortUrl())) {
             throw new RuntimeException("This custom URL already exists!!!");
@@ -105,15 +112,18 @@ public class URLService {
         return stringRedisTemplate.opsForValue().increment("UrlEntity");
     }
 
+    @Transactional
     public OneFieldLongResponse getClicks(String shortUrl, HttpServletRequest servletRequest) {
         String ipAddress = servletRequest.getHeader("X-Forwarded-For");
         if (Objects.isNull(ipAddress) || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
             ipAddress = servletRequest.getRemoteAddr();
-
-            UserInfoEntity userInfoEntity = new UserInfoEntity();
-            userInfoEntity.setAddress(ipAddress);
-            userInfoRepository.save(userInfoEntity);
         }
+
+        UserInfoEntity userInfoEntity = new UserInfoEntity();
+        userInfoEntity.setAddress(ipAddress);
+        userInfoRepository.save(userInfoEntity);
+
+        saveDeviceDetails(userInfoEntity.getAddress(), servletRequest.getHeader("user-agent"));
 
          UrlEntity url = repository.findByShortURL(shortUrl)
                  .orElseThrow(() -> new RuntimeException("Cannot find by short url"));
@@ -123,5 +133,25 @@ public class URLService {
 
     public Long increaseClickNumber() {
         return stringRedisTemplate.opsForValue().increment("shorturl:click:sequence");
+    }
+
+    @Transactional
+    public void saveDeviceDetails(String IP, String userAgent) {
+        UserInfoEntity userInfoEntity = userInfoRepository.findByAddress(IP)
+                .orElseThrow();
+
+        String deviceDetails = "UNKNOWN";
+
+        Client client = new Parser().parse(userAgent);
+        if (Objects.nonNull(client)) {
+            deviceDetails = client.userAgent.family
+                    + " " + client.userAgent.major + "."
+                    + client.userAgent.minor + " - "
+                    + client.os.family + " " + client.os.major
+                    + "." + client.os.minor;
+        }
+
+        List<String> existingDeviceDetails = userInfoEntity.getDeviceDetails();
+        existingDeviceDetails.add(deviceDetails);
     }
 }
