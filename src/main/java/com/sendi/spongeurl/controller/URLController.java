@@ -41,9 +41,9 @@ public class URLController {
     }
 
     @GetMapping("{shortURLValue}")
-    public void redirectToFullURL(HttpServletResponse response, @PathVariable String shortURLValue) {
+    public void redirectToFullURL(HttpServletRequest request, HttpServletResponse response, @PathVariable String shortURLValue) {
         try {
-            String fullUrl = urlService.getFullUrl(shortURLValue);
+            String fullUrl = urlService.getFullUrl(shortURLValue, request);
             response.sendRedirect(fullUrl);
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Url not found", e);
@@ -53,7 +53,7 @@ public class URLController {
     }
 
     @GetMapping("/clicks/{shortURLValue}")
-    public ResponseEntity<OneFieldLongResponse> getNumberOfClicks(@PathVariable String shortURLValue) {
-        return ResponseEntity.ok(urlService.getClicks(shortURLValue));
+    public ResponseEntity<OneFieldLongResponse> getNumberOfClicks(HttpServletRequest request, @PathVariable String shortURLValue) {
+        return ResponseEntity.ok(urlService.getClicks(shortURLValue, request));
     }
 }

@@ -6,7 +6,9 @@ import com.sendi.spongeurl.dto.ShortURL;
 import com.sendi.spongeurl.common.URLUtil;
 import com.sendi.spongeurl.common.ShorteningUtil;
 import com.sendi.spongeurl.entity.UrlEntity;
+import com.sendi.spongeurl.entity.UserInfoEntity;
 import com.sendi.spongeurl.repo.URLRepository;
+import com.sendi.spongeurl.repo.UserInfoRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -21,6 +23,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class URLService {
     private final URLRepository repository;
+    private final UserInfoRepository userInfoRepository;
     private final StringRedisTemplate stringRedisTemplate;
 
     private UrlEntity get(Long id) {
@@ -28,7 +31,16 @@ public class URLService {
                 .orElseThrow(() -> new RuntimeException("Url not found with id " + id));
     }
 
-    public String getFullUrl(String shortUrl) {
+    public String getFullUrl(String shortUrl, HttpServletRequest request) {
+        String ipAddress = request.getHeader("X-Forwarded-For");
+        if (Objects.isNull(ipAddress) || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getRemoteAddr();
+
+            UserInfoEntity userInfoEntity = new UserInfoEntity();
+            userInfoEntity.setAddress(ipAddress);
+            userInfoRepository.save(userInfoEntity);
+        }
+
         UrlEntity url = repository.findByShortURL(shortUrl)
                 .orElseThrow(() -> new RuntimeException("URL doesn't exist for this short url!"));
 
@@ -49,6 +61,15 @@ public class URLService {
 
     @Transactional(readOnly = true)
     public ShortURL shortenURL(HttpServletRequest servletRequest, UrlCreateRequest urlCreateRequest) {
+        String ipAddress = servletRequest.getHeader("X-Forwarded-For");
+        if (Objects.isNull(ipAddress) || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = servletRequest.getRemoteAddr();
+
+            UserInfoEntity userInfoEntity = new UserInfoEntity();
+            userInfoEntity.setAddress(ipAddress);
+            userInfoRepository.save(userInfoEntity);
+        }
+
         if (repository.existsByShortURL(urlCreateRequest.getCustomShortUrl())) {
             throw new RuntimeException("This custom URL already exists!!!");
         }
@@ -84,7 +105,16 @@ public class URLService {
         return stringRedisTemplate.opsForValue().increment("UrlEntity");
     }
 
-    public OneFieldLongResponse getClicks(String shortUrl) {
+    public OneFieldLongResponse getClicks(String shortUrl, HttpServletRequest servletRequest) {
+        String ipAddress = servletRequest.getHeader("X-Forwarded-For");
+        if (Objects.isNull(ipAddress) || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = servletRequest.getRemoteAddr();
+
+            UserInfoEntity userInfoEntity = new UserInfoEntity();
+            userInfoEntity.setAddress(ipAddress);
+            userInfoRepository.save(userInfoEntity);
+        }
+
          UrlEntity url = repository.findByShortURL(shortUrl)
                  .orElseThrow(() -> new RuntimeException("Cannot find by short url"));
 
