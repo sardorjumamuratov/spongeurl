@@ -50,8 +50,12 @@ public class URLService {
         UrlEntity url = repository.findByShortURL(shortUrl)
                 .orElseThrow(() -> new RuntimeException("URL doesn't exist for this short url!"));
 
-        url.setClicks(increaseClickNumber());
-        repository.save(url);
+        if (url.getIsOneTime())
+            clearAllExpiredUrls(List.of(url)); // expire if one time
+        else {
+            url.setClicks(increaseClickNumber());
+            repository.save(url);
+        }
 
         return url.getFullURL();
     }

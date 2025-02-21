@@ -12,6 +12,7 @@ import java.time.LocalDate;
 public class UrlCreateRequest {
     private String fullUrlValue;
     private String customShortUrl;
+    private Boolean isOneTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate expiryDate;

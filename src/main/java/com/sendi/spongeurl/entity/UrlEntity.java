@@ -23,6 +23,8 @@ public class UrlEntity {
 
     private Long clicks;
 
+    private Boolean isOneTime;
+
     private LocalDate expiryDate;
 }
 
